@@ -1,7 +1,7 @@
-/*   
+/*
  *   File: main_test_loop.h
  *   Author: Vasileios Trigonakis <vasileios.trigonakis@epfl.ch>
- *   Description: 
+ *   Description:
  *   main_test_loop.h is part of ASCYLIB
  *
  * Copyright (c) 2014 Vasileios Trigonakis <vasileios.trigonakis@epfl.ch>,
@@ -19,16 +19,17 @@
  * GNU General Public License for more details.
  *
  */
-	
+
+
 #ifndef _MAIN_TEST_LOOP_H_
-	
+
 	#define _MAIN_TEST_LOOP_H_
-	
+
 	#if OPS_PER_THREAD == 1
 		#define PRINT_OPS_PER_THREAD() \
 			printf("%-3lu  %-8zu %-8zu %-8zu\n",t, getting_count[t], putting_count[t], removing_count[t]);
 	#else
-		#define PRINT_OPS_PER_THREAD()					
+		#define PRINT_OPS_PER_THREAD()
 	#endif
 
 	#if WORKLOAD == 2 //skewed workload
@@ -48,6 +49,39 @@
 				free(__zipf_arr->stats);				\
 			);											\
 			free(__zipf_arr);
+	#elif WORKLOAD == 4 //Precomputed workload.
+
+
+		#define THREAD_INIT(id)													\
+			unsigned char buffer[100];											\
+			FILE *ptr;															\
+			char name[100];														\
+			char number[3];														\
+																				\
+			strcpy(name, PRECOMP_DIR);											\
+			strcat(name, "/");													\
+			sprintf(number, "%d", id);											\
+			strcat(name, number);												\
+																				\
+			ptr = fopen(name, "rb");											\
+			int bytes;															\
+			uint64_t allocated_bytes = 128;										\
+			precomputed_bytes = calloc(allocated_bytes, 1);						\
+																				\
+			do {																\
+				bytes = fread(buffer, 1, sizeof(buffer), ptr);					\
+				for (int i = 0; i < bytes; i++) {								\
+					if (nbr_precomputed_bytes >= allocated_bytes) {				\
+						allocated_bytes *= 2;									\
+						precomputed_bytes = realloc(precomputed_bytes, allocated_bytes);		\
+					}															\
+					precomputed_bytes[nbr_precomputed_bytes++] = buffer[i];		\
+				}																\
+			} while(bytes > 0);													\
+																				\
+			fclose(ptr);
+
+		#define THREAD_END(id)		free(precomputed_bytes);
 	#else
 		#define THREAD_INIT(id)
 		#define THREAD_END()
@@ -58,11 +92,12 @@
 		volatile uint32_t phase_put_threshold_start = 0.99999 * UINT_MAX;	\
 		volatile uint32_t phase_put_threshold_stop  = 0.9999999 * UINT_MAX;	\
 		__thread volatile ticks phase_start, phase_stop;					\
-		ZIPF_RAND_DECLARATIONS();
-
+		ZIPF_RAND_DECLARATIONS();											\
+		__thread char* precomputed_bytes;									\
+		__thread uint32_t nbr_precomputed_bytes, byte_at, bit_at;
 	#ifndef WORKLOAD
 		#define WORKLOAD 0		/*normal workload*/
-	#endif 
+	#endif
 
 	#if WORKLOAD == 1		/* with phases */
 		#define TEST_LOOP(algo_type)															\
@@ -124,6 +159,97 @@
 				my_getting_count++;																\
 			}
 
+	#elif WORKLOAD == 4	/* precomputed workload */
+
+		static inline char get_precomputed()
+		{
+			extern __thread uint32_t bit_at, byte_at, nbr_precomputed_bytes;
+			extern __thread char* precomputed_bytes;
+
+			assert(nbr_precomputed_bytes > 0);
+
+			if (unlikely(++bit_at == 8)) {
+				bit_at = 0;
+
+				if (unlikely(++byte_at == nbr_precomputed_bytes)) {
+					byte_at = 0;
+				}
+			}
+
+			char byte = precomputed_bytes[byte_at];
+			return byte & (1 << bit_at);
+		}
+
+
+		#define TEST_LOOP(algo_type)	error("ERROR: Precomputed work load is only update/no update\n");
+
+		#define TEST_LOOP_ONLY_UPDATES()														\
+			if (get_precomputed())																\
+			{																					\
+				key = 1;	/* This should not be needed, and we don't gen rng anymore*/ 		\
+				int res;																		\
+				START_TS(1);																	\
+				res = DS_ADD(set, key, key);													\
+				if(res)																			\
+				{																				\
+					END_TS(1, my_putting_count_succ);											\
+					ADD_DUR(my_putting_succ);													\
+					my_putting_count_succ++;													\
+				}																				\
+			  END_TS_ELSE(4, my_putting_count - my_putting_count_succ, my_putting_fail);		\
+			  my_putting_count++;																\
+			}																					\
+			else																				\
+			{																					\
+				int removed;																	\
+				START_TS(2);																	\
+				removed = DS_REMOVE(set);														\
+				if(removed != 0)																\
+				{																				\
+					END_TS(2, my_removing_count_succ);											\
+					ADD_DUR(my_removing_succ);													\
+					my_removing_count_succ++;													\
+				}																				\
+				END_TS_ELSE(5, my_removing_count - my_removing_count_succ, my_removing_fail);	\
+				my_removing_count++;															\
+			} 																					\
+			if(side_work>0)																		\
+				cpause(my_random(&(seeds[0]), &(seeds[1]), &(seeds[2])) % (side_work));			\
+
+		#define COUNTER_LOOP_ONLY_UPDATES()														\
+			if (get_precomputed())																\
+			{																					\
+				int res;																		\
+				START_TS(1);																	\
+				res = DS_ADD(set,keye,key);														\
+				if(res)																			\
+				{																				\
+					END_TS(1, my_putting_count_succ);											\
+					ADD_DUR(my_putting_succ);													\
+					my_putting_count_succ++;													\
+				}																				\
+			  END_TS_ELSE(4, my_putting_count - my_putting_count_succ, my_putting_fail);		\
+			  my_putting_count++;																\
+			}																					\
+			else																				\
+			{																					\
+				int removed;																	\
+				START_TS(2);																	\
+				removed = DS_REMOVE(set);														\
+				if(removed != 0)																\
+				{																				\
+					END_TS(2, my_removing_count_succ);											\
+					ADD_DUR(my_removing_succ);													\
+					my_removing_count_succ++;													\
+				}																				\
+				END_TS_ELSE(5, my_removing_count - my_removing_count_succ, my_removing_fail);	\
+				my_removing_count++;															\
+			} 																					\
+			if(side_work>0)																		\
+				cpause(my_random(&(seeds[0]), &(seeds[1]), &(seeds[2])) % (side_work));			\
+
+		#define TEST_LOOP_ONLY_4UPDATES()	error("TEST_LOOP_ONLY_4UPDATES() not implemented\n");
+
 	#elif WORKLOAD == 0	/* normal uniform workload */
 		#define TEST_LOOP(algo_type)														\
 			c = (uint32_t)(my_random(&(seeds[0]),&(seeds[1]),&(seeds[2]))); /*toss dise to get operation to carry out*/ \
@@ -172,7 +298,7 @@
 			}																				\
 			if(side_work>0)																		\
 				cpause(my_random(&(seeds[0]), &(seeds[1]), &(seeds[2])) % (side_work));			\
-		
+
 		#define TEST_LOOP_ONLY_UPDATES()														\
 			c = (uint32_t)(my_random(&(seeds[0]),&(seeds[1]),&(seeds[2])));						\
 			if (unlikely(c < scale_put))														\
@@ -276,8 +402,8 @@
 			} 																					\
 			if(side_work>0)																		\
 				cpause(my_random(&(seeds[0]), &(seeds[1]), &(seeds[2])) % (side_work));			\
-			
-	#elif WORKLOAD == 3	/* Producer consumer workload */	
+
+	#elif WORKLOAD == 3	/* Producer consumer workload */
 		#define TEST_LOOP_ONLY_UPDATES()														\
 			c = (uint32_t)(my_random(&(seeds[0]),&(seeds[1]),&(seeds[2])));                     \
 			if (ID < (num_threads*put_rate))													\
@@ -309,7 +435,7 @@
 				END_TS_ELSE(5, my_removing_count - my_removing_count_succ, my_removing_fail);	\
 				my_removing_count++;															\
 			} 																					\
-			cpause(side_work);																
+			cpause(side_work);
 
 	#elif WORKLOAD == 2	/* zipf workload */
 		#  define TEST_LOOP(algo_type)														\
@@ -365,7 +491,7 @@
 	// double pow_tot_correction = (throughput * eng_per_test_iter_nj[num_threads-1][0]) / 1e9;
 	//  printf("#Duration: %f, %f, %f\n", s.duration[0], s.duration[1], s.duration[2]);
 	#if RAPL_READ_ENABLE == 1
-		#if POW_CORRECTED == 1																					
+		#if POW_CORRECTED == 1
 			#define RR_PRINT_CORRECTED()																		\
 				rapl_stats_t s;																					\
 				RR_STATS(&s);																					\
@@ -406,10 +532,10 @@
 				printf("Rest Power  (W), %11f \n",s.power_rest[NUMBER_OF_SOCKETS]);							\
 				printf("PPO Power  (W), %11f \n",s.power_pp0[NUMBER_OF_SOCKETS]);							\
 				printf("Package Power  (W), %11f \n",s.power_package[NUMBER_OF_SOCKETS]);					\
-				printf("DRAM Power  (W), %11f \n",s.power_dram[NUMBER_OF_SOCKETS]);																					
-		#endif																								
-	/* double pow_tot_corrected = s.power_total[NUMBER_OF_SOCKETS] - pow_tot_correction - static_pow; \ */ 	
-	#else																									
+				printf("DRAM Power  (W), %11f \n",s.power_dram[NUMBER_OF_SOCKETS]);
+		#endif
+	/* double pow_tot_corrected = s.power_total[NUMBER_OF_SOCKETS] - pow_tot_correction - static_pow; \ */
+	#else
 		#define RR_PRINT_CORRECTED()
 	#endif
 #endif	/* _MAIN_TEST_LOOP_H_ */

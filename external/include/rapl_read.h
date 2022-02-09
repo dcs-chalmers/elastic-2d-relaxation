@@ -1,7 +1,7 @@
-/*   
+/*
  *   File: rapl_read.h
  *   Author: Vasileios Trigonakis <vasileios.trigonakis@epfl.ch>
- *   Description: 
+ *   Description:
  *   rapl_read.h is part of ASCYLIB
  *
  * The MIT License (MIT)
@@ -32,7 +32,7 @@
 #define _RAPL_READ_H_
 
 #ifdef __cplusplus
-extern "C" 
+extern "C"
 {
 #endif
 
@@ -47,9 +47,9 @@ extern "C"
 	#include <math.h>
 	#include <string.h>
 
-	//#include "platform_defs.h" 
+	//#include "platform_defs.h"
 
-	//#define RAPL_READ_ENABLE 1 
+	//#define RAPL_READ_ENABLE 1
 
 	/*********************************************************************************/
 	/* interface */
@@ -62,42 +62,42 @@ extern "C"
 		#define RR_INIT_ALL()
 		/* start ALL measurements. Only the responsible (for each socket) core actually does
 		   measurements. */
-		#define RR_START()			
-		/* stop ALL measurements and update statistics. Only the responsible (for each socket) 
+		#define RR_START()
+		/* stop ALL measurements and update statistics. Only the responsible (for each socket)
 		   core actually does measurements. */
-		#define RR_STOP()				
-		/* start some measurements (i.e., package, pp0, and dram). Only the responsible 
+		#define RR_STOP()
+		/* start some measurements (i.e., package, pp0, and dram). Only the responsible
 		   (for each socket) core actually does measurements. */
-		#define RR_START_SIMPLE()			
-		/* stop some measurements (i.e., package, pp0, and dram) and update the statistics. 
+		#define RR_START_SIMPLE()
+		/* stop some measurements (i.e., package, pp0, and dram) and update the statistics.
 		   Only the responsible  (for each socket) core actually does  measurements. */
-		#define RR_STOP_SIMPLE()			
+		#define RR_STOP_SIMPLE()
 		/* start some measurements (i.e., package, pp0, and dram), w/o checking if the core
 		   is the responsible for taking the measurements. To be used, for instance, when
 		   a main thread takes the measurements for a socket. */
-		#define RR_START_UNPROTECTED()			
+		#define RR_START_UNPROTECTED()
 		/* stop some measurements (i.e., package, pp0, and dram) and update the statistics,
 		   w/o checking if the core is the responsible for taking the measurements. */
-		#define RR_STOP_UNPROTECTED()			
+		#define RR_STOP_UNPROTECTED()
 		/* start some measurements (i.e., package, pp0, and dram), w/o checking if the core
-		   is the responsible for taking the measurements. Takes measurements for all 
+		   is the responsible for taking the measurements. Takes measurements for all
 		   sockets, not only the one where the threads runs. */
-		#define RR_START_UNPROTECTED_ALL()			
+		#define RR_START_UNPROTECTED_ALL()
 		/* stop some measurements (i.e., package, pp0, and dram) and update the statistics,
 		   w/o checking if the core is the responsible for taking the measurements. */
-		#define RR_STOP_UNPROTECTED_ALL()			
+		#define RR_STOP_UNPROTECTED_ALL()
 		/* print the current statistics with `detailed` level of details (only the responsible
 		   core for printing)*/
-		#define RR_PRINT(detailed)			
+		#define RR_PRINT(detailed)
 		/* print the current statistics with `detailed` level of details */
-		#define RR_PRINT_UNPROTECTED(detailed)			
-		/* print the current statistics with `detailed` level of details for node nd, or 
+		#define RR_PRINT_UNPROTECTED(detailed)
+		/* print the current statistics with `detailed` level of details for node nd, or
 		   for all nodes if nd == RR_NODE_ALL*/
-		#define RR_PRINT_UNPROTECTED_NODE(nd, detailed)			
+		#define RR_PRINT_UNPROTECTED_NODE(nd, detailed)
 		/* terminate the rapl_read library */
-		#define RR_TERM()				
+		#define RR_TERM()
 		/* generate stats and store them in s (rapl_stats_t*) */
-		#define RR_STATS(s)				
+		#define RR_STATS(s)
 
 	#else  /* RAPL_READ_ENABLE *********************************************************/
 
@@ -105,13 +105,13 @@ extern "C"
 		  if (rapl_read_init(core) < 0)			\
 			{						\
 			  printf("[RAPL] Could not initialize\n");	\
-			}						
+			}
 
 		#define RR_INIT_ALL()				\
 		  if (rapl_read_init_all() < 0)			\
 			{						\
 			  printf("[RAPL] Could not initialize\n");	\
-			}						
+			}
 
 		#define RR_START()				\
 		  rapl_read_start()
@@ -249,7 +249,7 @@ extern "C"
 	typedef uint64_t rapl_read_ticks;
 
 	#if defined(__i386__)
-		static inline rapl_read_ticks rapl_read_getticks(void) 
+		static inline rapl_read_ticks rapl_read_getticks(void)
 		{
 			rapl_read_ticks ret;
 			__asm__ __volatile__("rdtsc" : "=A" (ret));
@@ -266,7 +266,7 @@ extern "C"
 		static inline rapl_read_ticks rapl_read_getticks()
 		{
 			rapl_read_ticks ret;
-			__asm__ __volatile__ ("rd %%tick, %0" : "=r" (ret) : "0" (ret)); 
+			__asm__ __volatile__ ("rd %%tick, %0" : "=r" (ret) : "0" (ret));
 			return ret;
 		}
 	#elif defined(__tile__)

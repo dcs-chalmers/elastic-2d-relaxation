@@ -1,8 +1,8 @@
-/*   
+/*
  *   File: common.h
- *   Author: Vasileios Trigonakis <vasileios.trigonakis@epfl.ch>, 
+ *   Author: Vasileios Trigonakis <vasileios.trigonakis@epfl.ch>,
  *  	     Tudor David <tudor.david@epfl.ch>
- *   Description: 
+ *   Description:
  *   common.h is part of ASCYLIB
  *
  * Copyright (c) 2014 Vasileios Trigonakis <vasileios.trigonakis@epfl.ch>,
@@ -36,8 +36,8 @@
 
 	#if __GNUC__ >= 4 && __GNUC_MINOR__ >= 6
 		#define STATIC_ASSERT(a, msg)  _Static_assert ((a), msg);
-	#else 
-		#define STATIC_ASSERT(a, msg)           
+	#else
+		#define STATIC_ASSERT(a, msg)
 	#endif
 
 	#define STRING_LENGTH  8
@@ -45,12 +45,12 @@
 	typedef intptr_t skey_t;
 	typedef intptr_t sval_t;
 
-	typedef struct strkey_t 
+	typedef struct strkey_t
 	{
-		char key[STRING_LENGTH]; 
+		char key[STRING_LENGTH];
 	} strkey_t;
 
-	typedef struct strval_t 
+	typedef struct strval_t
 	{
 		char val[STRING_LENGTH];
 	} strval_t;
@@ -69,7 +69,7 @@
 	#define STR_KEY_MIN	 ""
 	#define STR_KEY_MAX	 "zzz"
 
-	static inline int strkey_compare(strkey_t k1, strkey_t k2) 
+	static inline int strkey_compare(strkey_t k1, strkey_t k2)
 	{
 		//TODO write our own strcmp
 		if ( strcmp(k1.key, k2.key) == 0) return 0;

@@ -30,7 +30,7 @@
 #include "latency.h"
 
 __thread ticks getticks_correction = 0;
-ticks getticks_correction_calc() 
+ticks getticks_correction_calc()
 {
 #    define GETTICKS_CALC_REPS 1000000
   ticks t_dur = 0;
@@ -61,9 +61,9 @@ prints_ticks_stats(int start, int end)
   unsigned long long tsamples = 0;
   ticks tticks = 0;
 
-  for (i = start; i < end; i++) 
+  for (i = start; i < end; i++)
     {
-      if (total_samples[i]) 
+      if (total_samples[i])
 	{
 	  have_output = 1;
 	  mpoints++;
@@ -71,15 +71,15 @@ prints_ticks_stats(int start, int end)
 	  tticks += total_sum_ticks[i];
 	}
     }
-  
+
   if (have_output)
     {
       printf("(PROFILING) >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
     }
 
-  for (i = start; i < end; i++) 
+  for (i = start; i < end; i++)
     {
-      if (total_samples[i] && total_sum_ticks[i]) 
+      if (total_samples[i] && total_sum_ticks[i])
 	{
 	  if (measurement_msgs[i] == NULL)
 	    {
@@ -121,7 +121,7 @@ ticks** __lat_op_all[1024];
 #include <math.h>
 
 static int
-ecdf_comp(const void *elem1, const void *elem2) 
+ecdf_comp(const void *elem1, const void *elem2)
 {
   size_t f = *((size_t*)elem1);
   size_t s = *((size_t*)elem2);

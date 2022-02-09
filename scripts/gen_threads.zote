@@ -1,0 +1,51 @@
+// For fun built in the (zote)[https://github.com/KvGeijer/zote] programming language
+// You can simply modify the for loops and cpu calculations to fit another computer
+include!("stdlib");
+
+fn format_cores(cores) -> {
+    lines := 16;
+    for line in [0:lines] {
+        out := cores[line*len(cores)/lines:(line + 1)*len(cores)/lines] >> join(",");
+        (out ++ if line != (lines - 1) "," else "") >> print
+    }
+}
+
+fn push_cpu(cpu, list) -> {
+    str(cpu) >> push(list);
+    for _ in [len(str(cpu)):3] " " >> push(list[-1]);
+}
+
+
+// First locally within one CPU, without hyperthreading (round-robin over CCX). Then HT and then inter-soket
+print("---------------------------------------------------");
+print("--------------------- LOCAL -----------------------");
+local_affine := [];
+for socket in [0, 1] for hyperthread in [0, 1] for ccx_inter in [0:8] for ccx in [0:16] {
+    cpu := hyperthread*256 + socket*128 + ccx*8 + ccx_inter;
+    cpu >> push_cpu(local_affine);
+}
+
+format_cores(local_affine);
+
+// First using all sockets within one CPU prefering hyperthreads (round-robin over CCX). Then then inter-soket
+print("---------------------------------------------------");
+print("--------------------- HYPER -----------------------");
+hyper := [];
+for socket in [0, 1] for ccx_inter in [0:8] for ccx in [0:16] for hyperthread in [0, 1] {
+    cpu := hyperthread*256 + socket*128 + ccx*8 + ccx_inter;
+    cpu >> push_cpu(hyper);
+}
+
+format_cores(hyper);
+
+// Alternating threads over two sockets. Round robin over CCX and prefering to not use hyperthreads
+print("---------------------------------------------------");
+print("---------------------- NUMA -----------------------");
+alternating := [];
+for hyperthread in [0, 1] for ccx_inter in [0:8] for ccx in [0:16] for socket in [0, 1] {
+    cpu := hyperthread*256 + socket*128 + ccx*8 + ccx_inter;
+    cpu >> push_cpu(alternating);
+}
+
+format_cores(alternating);
+

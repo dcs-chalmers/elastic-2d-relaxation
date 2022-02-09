@@ -4,7 +4,7 @@
  * File: atomic_ops.h
  * Author: Tudor David <tudor.david@epfl.ch>
  *
- * Description: 
+ * Description:
  *      Cross-platform interface to common atomic operations
  *
  * The MIT License (MIT)
@@ -85,7 +85,7 @@
 	//Test-and-set
 	#  define TAS_U8(a) tas_uint8(a)
 	//Memory barrier
-	#  define MEM_BARRIER asm volatile("membar #LoadLoad | #LoadStore | #StoreLoad | #StoreStore"); 
+	#  define MEM_BARRIER asm volatile("membar #LoadLoad | #LoadStore | #StoreLoad | #StoreStore");
 	//end of sparc code
 
 #elif defined(__tile__)
@@ -156,7 +156,7 @@
 	#endif
 
 	//Swap pointers
-	static inline void* swap_pointer(volatile void* ptr, void *x) 
+	static inline void* swap_pointer(volatile void* ptr, void *x)
 	{
 		#ifdef __i386__
 			__asm__ __volatile__("xchgl %0,%1":"=r" ((unsigned) x):"m" (*(volatile unsigned *)ptr), "0" (x):"memory");
@@ -168,35 +168,35 @@
 	}
 
 	//Swap uint64_t
-	static inline uint64_t swap_uint64(volatile uint64_t* target,  uint64_t x) 
+	static inline uint64_t swap_uint64(volatile uint64_t* target,  uint64_t x)
 	{
 		__asm__ __volatile__("xchgq %0,%1":"=r" ((uint64_t) x):"m" (*(volatile uint64_t *)target), "0" ((uint64_t) x):"memory");
 		return x;
 	}
 
 	//Swap uint32_t
-	static inline uint32_t swap_uint32(volatile uint32_t* target,  uint32_t x) 
+	static inline uint32_t swap_uint32(volatile uint32_t* target,  uint32_t x)
 	{
 		__asm__ __volatile__("xchgl %0,%1":"=r" ((uint32_t) x):"m" (*(volatile uint32_t *)target), "0" ((uint32_t) x):"memory");
 		return x;
 	}
 
 	//Swap uint16_t
-	static inline uint16_t swap_uint16(volatile uint16_t* target,  uint16_t x) 
+	static inline uint16_t swap_uint16(volatile uint16_t* target,  uint16_t x)
 	{
 		__asm__ __volatile__("xchgw %0,%1":"=r" ((uint16_t) x):"m" (*(volatile uint16_t *)target), "0" ((uint16_t) x):"memory");
 		return x;
 	}
 
 	//Swap uint8_t
-	static inline uint8_t swap_uint8(volatile uint8_t* target,  uint8_t x) 
+	static inline uint8_t swap_uint8(volatile uint8_t* target,  uint8_t x)
 	{
 		__asm__ __volatile__("xchgb %0,%1":"=r" ((uint8_t) x):"m" (*(volatile uint8_t *)target), "0" ((uint8_t) x):"memory");
 		return x;
 	}
 
 	//test-and-set uint8_t
-	static inline uint8_t tas_uint8(volatile uint8_t *addr) 
+	static inline uint8_t tas_uint8(volatile uint8_t *addr)
 	{
 		uint8_t oldval;
 		__asm__ __volatile__("xchgb %0,%1": "=q"(oldval), "=m"(*addr): "0"((unsigned char) 0xff), "m"(*addr) : "memory");
@@ -210,9 +210,11 @@
 	#  define CAS_U16(a,b,c) __sync_val_compare_and_swap(a,b,c)
 	#  define CAS_U32(a,b,c) __sync_val_compare_and_swap(a,b,c)
 	#  define CAS_U64(a,b,c) __sync_val_compare_and_swap(a,b,c)
-	
+
 	/***************adon-*******************************************************/
 	//bool __atomic_compare_exchange (type *ptr, type *expected, type *desired, bool weak, int success_memmodel, int failure_memmodel)
+
+	#  define SWP(a, b)             __atomic_exchange_n(a, b, __ATOMIC_SEQ_CST)
 	#  define CAE_16(a,b,c,d,e,f) 	__atomic_compare_exchange (a,b,c,d,e,f)
 	#  define CAE(a,b,c) 			__atomic_compare_exchange (a,b,c,0,__ATOMIC_SEQ_CST,__ATOMIC_SEQ_CST)
 	#  define CAS(a,b,c) 			__sync_bool_compare_and_swap(a,b,c)
@@ -220,7 +222,14 @@
 	#  define CAS_16(a,b,c) 		__sync_bool_compare_and_swap_16(a,b,c)
 	#  define FAXOR(a,b) 				__sync_fetch_and_or(a,b);
 	/**********************************************************************/
-	
+
+	/******************** Kåre ******************************/
+	// These commands are gcc builtins:
+	// https://gcc.gnu.org/onlinedocs/gcc/_005f_005fatomic-Builtins.html
+
+	#  define CAE_N(a,b,c,d,e,f) 	__atomic_compare_exchange_n (a,b,c,d,e,f)
+	/********************************************************/
+
 	//Swap
 	#  define SWAP_PTR(a,b) swap_pointer(a,b)
 	#  define SWAP_U8(a,b) swap_uint8(a,b)

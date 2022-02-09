@@ -1,16 +1,16 @@
-/*    
+/*
  * Author: Adones <adones@chalmers.se>
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * Discritors are synchronised globally (global descriptors )before each operatio is curried out
  */
 
 #include "multi-counter-faa_random-relaxed.h"
-	
+
 RETRY_STATS_VARS;
 
 #include "latency.h"
@@ -25,7 +25,7 @@ __thread uint64_t thread_index;
 
 counter_t* create_counter(uint64_t width)
 {
-	counter_t *set;	
+	counter_t *set;
 	if ((set = (counter_t*) ssalloc_aligned(CACHE_LINE_SIZE, sizeof(counter_t))) == NULL)
     {
 		perror("malloc");
@@ -37,16 +37,16 @@ counter_t* create_counter(uint64_t width)
 	for(i=0;i<width;i++)
 	{
 		set->array[i].count=0;
-	}		
+	}
 	return set;
 }
 
 uint64_t increment(counter_t *set)
 {
 	int64_t count;
-		
+
 	thread_index = random_index(set);
-	
+
 	count = IAF_U64(&set->array[thread_index].count);
 	#if VALIDATESIZE==1
 		return 1;
@@ -57,7 +57,7 @@ uint64_t increment(counter_t *set)
 uint64_t decrement(counter_t *set)
 {
 	int64_t count;
-		
+
 	thread_index = random_index(set);
 	count = DAF_U64(&set->array[thread_index].count);
 	#if VALIDATESIZE==1

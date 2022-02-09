@@ -9,7 +9,7 @@
  *  nodes) and 1 global ticket lock. A thread always tries to acquire
  *  the local ticket lock first. If there isn't any (local) available,
  *  it enqueues for acquiring the global ticket lock and at the same
- *  time it "gives" NB_TICKETS_LOCAL tickets to the local ticket lock, 
+ *  time it "gives" NB_TICKETS_LOCAL tickets to the local ticket lock,
  *  so that if more threads from the same socket try to acquire the lock,
  *  they will enqueue on the local lock, without even accessing the
  *  global one.
@@ -40,13 +40,13 @@
 
 __thread uint32_t my_node, my_id;
 
-htlock_t* 
+htlock_t*
 create_htlock()
 {
   htlock_t* htl = NULL;
 #ifdef __sparc__
   htl = memalign(CACHE_LINE_SIZE, sizeof(htlock_t));
-  if (htl==NULL) 
+  if (htl==NULL)
     {
       fprintf(stderr,"Error @ memalign : create htlock\n");
     }
@@ -55,12 +55,12 @@ create_htlock()
     {
       fprintf(stderr, "Error @ posix_memalign : create_htlock\n");
     }
-#endif    
+#endif
   assert(htl != NULL);
 
 #ifdef __sparc__
   htl->global = memalign(CACHE_LINE_SIZE, sizeof(htlock_global_t));
-  if (htl==NULL) 
+  if (htl==NULL)
     {
       fprintf(stderr,"Error @ memalign : create htlock\n");
     }
@@ -69,7 +69,7 @@ create_htlock()
     {
       fprintf(stderr, "Error @ posix_memalign : create_htlock\n");
     }
-#endif    
+#endif
   assert(htl->global != NULL);
 
 
@@ -123,7 +123,7 @@ init_alloc_htlock(htlock_t* htl)
 
 #ifdef __sparc__
   htl->global = memalign(CACHE_LINE_SIZE, sizeof(htlock_global_t));
-  if (htl==NULL) 
+  if (htl==NULL)
     {
       fprintf(stderr,"Error @ memalign : create htlock\n");
     }
@@ -132,7 +132,7 @@ init_alloc_htlock(htlock_t* htl)
     {
       fprintf(stderr, "Error @ posix_memalign : create_htlock\n");
     }
-#endif    
+#endif
   assert(htl->global != NULL);
 
 
@@ -173,9 +173,9 @@ init_thread_htlocks(uint32_t phys_core)
   __sync_synchronize();
   uint32_t real_core_num = 0;
   uint32_t i;
-  for (i = 0; i < (NUMBER_OF_SOCKETS * CORES_PER_SOCKET); i++) 
+  for (i = 0; i < (NUMBER_OF_SOCKETS * CORES_PER_SOCKET); i++)
     {
-      if (the_cores[i]==phys_core) 
+      if (the_cores[i]==phys_core)
 	{
 	  real_core_num = i;
 	  break;
@@ -198,19 +198,19 @@ is_free_hticket(htlock_t* htl)
 #if defined(OPTERON_OPTIMIZE)
   PREFETCHW(glb);
 #endif
-  if (glb->cur == glb->nxt) 
+  if (glb->cur == glb->nxt)
     {
       return 1;
     }
   return 0;
 }
 
-static htlock_t* 
+static htlock_t*
 create_htlock_no_alloc(htlock_t* htl, htlock_local_t* locals[NUMBER_OF_SOCKETS], size_t offset)
 {
 #ifdef __sparc__
   htl->global = memalign(CACHE_LINE_SIZE, sizeof(htlock_global_t));
-  if (htl==NULL) 
+  if (htl==NULL)
     {
       fprintf(stderr,"Error @ memalign : create htlock\n");
     }
@@ -219,7 +219,7 @@ create_htlock_no_alloc(htlock_t* htl, htlock_local_t* locals[NUMBER_OF_SOCKETS],
     {
       fprintf(stderr, "Error @ posix_memalign : create_htlock\n");
     }
-#endif    
+#endif
   assert(htl->global != NULL);
 
 
@@ -256,7 +256,7 @@ init_htlocks(uint32_t num_locks)
     {
       fprintf(stderr, "Error @ posix_memalign : init_htlocks\n");
     }
-#endif   
+#endif
   assert(htls != NULL);
 
 
@@ -289,7 +289,7 @@ init_htlocks(uint32_t num_locks)
 }
 
 
-void 
+void
 free_htlocks(htlock_t* locks)
 {
   free(locks);
@@ -346,7 +346,7 @@ htlock_wait_ticket(htlock_local_t* lock, const uint32_t ticket)
 	{
 	  nop_rep(TICKET_WAIT_NEXT);
 	}
-    }  
+    }
 #else
   while (lock->cur != ticket)
     {
@@ -400,7 +400,7 @@ htlock_lock(htlock_t* l)
   /*     printf("%5llu - ", e - s - 74); */
   /*   } */
   /* only the guy which gets local_ticket == -1 is allowed to share tickets */
-  if (local_ticket < -1)	
+  if (local_ticket < -1)
     {
       PAUSE;
       wait_cycles(-local_ticket * 120);
@@ -457,21 +457,21 @@ htlock_release(htlock_t* l)
     }
 }
 
-uint32_t 
+uint32_t
 htlock_trylock(htlock_t* l)
 {
   htlock_global_t* globalp = l->global;
-  PREFETCHW(globalp);  
+  PREFETCHW(globalp);
   uint32_t global_nxt = globalp->nxt;
 
-  htlock_global_t tmp = 
+  htlock_global_t tmp =
     {
-      .nxt = global_nxt, 
+      .nxt = global_nxt,
       .cur = global_nxt
     };
-  htlock_global_t tmp_new = 
+  htlock_global_t tmp_new =
     {
-      .nxt = global_nxt + 1, 
+      .nxt = global_nxt + 1,
       .cur = global_nxt
     };
 

@@ -1,7 +1,7 @@
-/*   
+/*
  *   File: sl_ms.h
  *   Author: Vasileios Trigonakis <vasileios.trigonakis@epfl.ch>
- *   Description: 
+ *   Description:
  *   sl_ms.h is part of ASCYLIB
  *
  * Copyright (c) 2014 Vasileios Trigonakis <vasileios.trigonakis@epfl.ch>,
@@ -61,7 +61,7 @@ typedef ALIGNED(CACHE_LINE_SIZE) struct counter_node
 {
 	int64_t count;
 	uint64_t version;
-	uint8_t padding[CACHE_LINE_SIZE - (sizeof(int64_t) + sizeof(uint64_t))]; 
+	uint8_t padding[CACHE_LINE_SIZE - (sizeof(int64_t) + sizeof(uint64_t))];
 } index_t;
 
 typedef ALIGNED(CACHE_LINE_SIZE) struct counter

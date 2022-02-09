@@ -6,7 +6,7 @@
 TBB_LIBS      ?= /home/trigonak/code/tbb42_20140122oss/build/linux_intel64_gcc_cc4.8_libc2.17_kernel3.11.0_release
 TBB_INCLUDES  ?= /home/trigonak/code/tbb42_20140122oss/include
 
-URCU_PATH     ?= /home/trigonak/code/urcu #path to the URCU installation 
+URCU_PATH     ?= /home/trigonak/code/urcu #path to the URCU installation
 
 # Compiler
 SOLARIS_CC1 	?= /opt/csw/bin/gcc
@@ -34,10 +34,17 @@ endif
 ifeq ($(VERSION),O3)
 	CFLAGS	+= -O3
 endif
+ifeq ($(VERSION),O4)
+	CFLAGS	+= -O3 -DNDEBUG
+endif
+
+ifeq ($(NDEBUG),TRUE)
+    CFLAGS += -DNDEBUG
+endif
 
 # Compile with compare and echange atomic instruction
 	CFLAGS	+= -mcx16
-	
+
 # Compile with global lock
 ifeq ($(GRANULARITY),GLOBAL_LOCK)
      CFLAGS	+= -DLL_GLOBAL_LOCK
@@ -86,13 +93,13 @@ endif
 # Platform dependent settings
 #############################
 #
-# GCC thread-local storage requires "significant 
+# GCC thread-local storage requires "significant
 # support from the linker (ld), dynamic linker
 # (ld.so), and system libraries (libc.so and libpthread.so), so it is
 # not available everywhere." source: GCC-doc.
 #
-# pthread_spinlock is replaced by pthread_mutex 
-# on MacOS X, as it might not be supported. 
+# pthread_spinlock is replaced by pthread_mutex
+# on MacOS X, as it might not be supported.
 # Comment LOCK = MUTEX below to enable.
 
 ifndef OS_NAME
@@ -141,7 +148,7 @@ endif
 ifeq ($(PC_NAME), lpd48core)
     PLATFORM_KNOWN = 1
     CC = gcc-4.8
-    CFLAGS += -DOPTERON -DPLATFORM_MCORE 
+    CFLAGS += -DOPTERON -DPLATFORM_MCORE
     PLATFORM_NUMA = 1
 endif
 ifeq ($(PC_NAME), lpdxeon2680)
@@ -158,7 +165,7 @@ endif
 
 ifeq ($(PC_NAME), lpdpc34)
     PLATFORM_KNOWN = 1
-    CFLAGS += -DHASWELL 
+    CFLAGS += -DHASWELL
     PLATFORM_NUMA = 0
 endif
 
@@ -195,7 +202,9 @@ ifeq ($(PC_NAME), excess)
     FREQ_GHZ := $(shell echo "scale=3; ${CORE_SPEED_KHz}/1000000" | bc -l)
     OS = Linux
     CFLAGS += -DEXCESS
-    PLATFORM_NUMA = 0
+    CFLAGS += -no-pie
+    LDFLAGS += -latomic
+    PLATFORM_NUMA = 1
 	CFLAGS += -DCORE_NUM=${CORE_NUM}
     CFLAGS += -DFREQ_GHZ=${FREQ_GHZ}
 	PLATFORM_KNOWN = 1
@@ -207,6 +216,7 @@ ifeq ($(PC_NAME), odysseus)
     FREQ_GHZ := $(shell echo "scale=3; ${CORE_SPEED_KHz}/1000000" | bc -l)
     OS = Linux
     CFLAGS += -DODYSSEUS
+    LDFLAGS += -latomic
     PLATFORM_NUMA = 0
 	CFLAGS += -DCORE_NUM=${CORE_NUM}
     CFLAGS += -DFREQ_GHZ=${FREQ_GHZ}
@@ -219,16 +229,57 @@ ifeq ($(PC_NAME), ithaca)
     FREQ_GHZ := $(shell echo "scale=3; ${CORE_SPEED_KHz}/1000000" | bc -l)
     OS = Linux
     CFLAGS += -DITHACA
+    LDFLAGS += -latomic
     PLATFORM_NUMA = 0
 	CFLAGS += -DCORE_NUM=${CORE_NUM}
     CFLAGS += -DFREQ_GHZ=${FREQ_GHZ}
 	PLATFORM_KNOWN = 1
 endif
 
+ifeq ($(PC_NAME), athena)
+    CORE_NUM ?= $(shell nproc)
+	CORE_SPEED_KHz := $(shell cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq)
+    FREQ_GHZ := $(shell echo "scale=3; ${CORE_SPEED_KHz}/1000000" | bc -l)
+    OS = Linux
+    CFLAGS += -DATHENA
+    LDFLAGS += -latomic
+    PLATFORM_NUMA = 1
+	CFLAGS += -DCORE_NUM=${CORE_NUM}
+    CFLAGS += -DFREQ_GHZ=${FREQ_GHZ}
+	PLATFORM_KNOWN = 1
+endif
+
+ifeq ($(PC_NAME), example)
+    CORE_NUM ?= $(shell nproc)
+	CORE_SPEED_KHz := $(shell cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq)
+    FREQ_GHZ := $(shell echo "scale=3; ${CORE_SPEED_KHz}/1000000" | bc -l)
+    OS = Linux
+    CFLAGS += -DEXAMPLE
+    LDFLAGS += -latomic
+    PLATFORM_NUMA = 0
+	CFLAGS += -DCORE_NUM=${CORE_NUM}
+    CFLAGS += -DFREQ_GHZ=${FREQ_GHZ}
+	PLATFORM_KNOWN = 1
+endif
+
+ifeq ($(PC_NAME), forsete)
+    CORE_NUM ?= $(shell nproc)
+    PLATFORM_NUMA = 0
+
+    CFLAGS += -DDEFAULT                 # Use default configuration
+    CFLAGS += -no-pie                   # Disable position-independent code
+    CFLAGS += -DCORE_NUM=${CORE_NUM}    # Cores and freq seldomly used
+    LDFLAGS += -latomic                 # To be able to use atomics.h (Strange mix of atomics in this project)
+    CC := gcc
+
+    PLATFORM_KNOWN = 1
+endif
+
 ifneq ($(PLATFORM_KNOWN), 1)
     CFLAGS += -DDEFAULT
     PLATFORM_NUMA = 0
     CORE_NUM ?= $(shell nproc)
+    LDFLAGS += -latomic
     CORE_SPEED_KHz := $(shell cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq)
     FREQ_GHZ := $(shell echo "scale=3; ${CORE_SPEED_KHz}/1000000" | bc -l)
     $(info ********************************** Using as a default number of cores: $(CORE_NUM) on 1 socket)
@@ -328,10 +379,17 @@ else
 			CFLAGS += -DGC=0
 		else ifeq ($(GC),2)
 			CFLAGS += -DGC=2
-		else	
+		else
 			CFLAGS += -DGC=1
 		endif
 	endif
+endif
+
+# Only used for throughput over time measurements
+ifdef OPS_PER_TS
+    CFLAGS += -DOPS_PER_TS=$(OPS_PER_TS)
+else
+    CFLAGS += -DOPS_PER_TS=100000
 endif
 
 ifeq ($(LATENCY),1)
@@ -364,10 +422,10 @@ ifeq ($(LATENCY),6)
 endif
 
 
-ifeq ($(INIT),all)
-	CFLAGS += -DINITIALIZE_FROM_ONE=0
-else
+ifeq ($(INIT),one)
 	CFLAGS += -DINITIALIZE_FROM_ONE=1
+else
+	CFLAGS += -DINITIALIZE_FROM_ONE=0
 endif
 
 ifeq ($(SET_CPU),0)
@@ -418,14 +476,32 @@ ifneq ($(WORKLOAD),)
 	CFLAGS += -DWORKLOAD=$(WORKLOAD)
 endif
 
+ifneq ($(PRECOMP_DIR),)
+    ifneq ($(WORKLOAD),)
+        ifneq ($(WORKLOAD), 4)
+            $(error Don't specify both WORKLOAD and PRECOMP_DIR!)
+        endif
+    endif
+    CFLAGS += -DWORKLOAD=4
+    CFLAGS += -DPRECOMP_DIR=\"$(PRECOMP_DIR)\"
+endif
+
 ifneq ($(VALIDATESIZE),)
 	CFLAGS += -DVALIDATESIZE=$(VALIDATESIZE)
 else
 	CFLAGS += -DVALIDATESIZE=1
 endif
 
+ifeq ($(VALIDATE_WINDOW),1)
+	CFLAGS += -DVALIDATE_WINDOW
+endif
+
 ifeq ($(RELAXATION_ANALYSIS),1)
 	CFLAGS += -DRELAXATION_ANALYSIS=$(RELAXATION_ANALYSIS)
+    ifeq ($(SAVE_FULL), 1)
+        CFLAGS += -DSAVE_FULL
+    endif
+
 	ifneq ($(RELAXATION_SEMANTICS),)
 		CFLAGS += -DRELAXATION_SEMANTICS=$(RELAXATION_SEMANTICS)
 	endif
@@ -450,7 +526,7 @@ ifneq ($(OPTIMIZE_ALGO),)
 	CFLAGS += -DOPTIMIZE_ALGO=$(OPTIMIZE_ALGO)
 endif
 
-ifeq ($(BACKOFF),1) 
+ifeq ($(BACKOFF),1)
 	CFLAGS += -DBACKOFF=1
 endif
 

@@ -57,7 +57,7 @@ extern uint32_t htlock_trylock(htlock_t* l);
 extern void htlock_release(htlock_t* l);
 extern inline void htlock_release_try(htlock_t* l);	/* trylock rls */
 
-static inline void 
+static inline void
 wait_cycles(uint64_t cycles)
 {
 #if defined(__x86_64__)

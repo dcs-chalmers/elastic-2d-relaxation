@@ -1,4 +1,4 @@
-/*   
+/*
  *   File: sspfd.h
  *   Author: Vasileios Trigonakis <vasileios.trigonakis@epfl.ch>
  *   Description: sspfd interface, structures, and helper functions
@@ -42,109 +42,109 @@ extern "C" {
 #include <math.h>
 
 #if SSPFD_DO_TIMINGS != 1	/* empty macros when not benchmarkings */
-/* 
- * initialize `num_stores` stores, with `num_entries` number of measurement entries each. 
- * Use `id` as the thread id for printing purposes. Each store should be used to measure a single event. 
+/*
+ * initialize `num_stores` stores, with `num_entries` number of measurement entries each.
+ * Use `id` as the thread id for printing purposes. Each store should be used to measure a single event.
  */
-#  define SSPFDINIT(num_stores, num_entries, id) 
+#  define SSPFDINIT(num_stores, num_entries, id)
 
-/* 
+/*
  * terminate (free) the initialized stores.
  */
 #  define SSPFDTERM()
 
-/* 
+/*
  * start measurement (i.e., take start timestamp at this point) for store `store`.
  */
-#  define SSPFDI(store) 
+#  define SSPFDI(store)
 
-/* 
- * only if sspfd_get_id() == id, start measurement (i.e., take start timestamp at this point) 
+/*
+ * only if sspfd_get_id() == id, start measurement (i.e., take start timestamp at this point)
  * for store `store`,
  */
-#  define SSPFDI_ID(store, id) 
+#  define SSPFDI_ID(store, id)
 
-/* 
+/*
  * start measurement (i.e., take start timestamp at this point) for any store. Need to do the calc
  * with SSPFDO_G() then.
  */
-#  define SSPFDI_G() 
+#  define SSPFDI_G()
 
-/* 
- * only if sspfd_get_id() == id, start measurement (i.e., take start timestamp at this point) 
+/*
+ * only if sspfd_get_id() == id, start measurement (i.e., take start timestamp at this point)
  * for any store. Need to do the calc with SSPFDO_ID_G() then.
  */
-#  define SSPFDI_ID_G(id) 
+#  define SSPFDI_ID_G(id)
 
-/* 
+/*
  * stop measuring (i.e., take stop timestamp at this point) for store `store` and store the duration
  * since `SSPFDI(store)` in entry `entry`.
  */
-#  define SSPFDO(store, entry) 
+#  define SSPFDO(store, entry)
 
-/* 
- * if sspfd_get_id() == id, stop measuring (i.e., take stop timestamp at this point) for store `store` 
+/*
+ * if sspfd_get_id() == id, stop measuring (i.e., take stop timestamp at this point) for store `store`
  * and store the duration since `SSPFDI(store)` in entry `entry`.
  */
-#  define SSPFDO_ID(store, entry) 
+#  define SSPFDO_ID(store, entry)
 
-/* 
+/*
  * stop measuring (i.e., take stop timestamp at this point) for SSPFDI_G and store the duration
  * since `SSPFDI(store)` in entry `entry`.
  */
-#  define SSPFDO_G(store, entry) 
+#  define SSPFDO_G(store, entry)
 
-/* 
+/*
  * if sspfd_get_id() == id, stop measuring (i.e., take stop timestamp at this point) for SSPFDI_ID_G
  * and store the duration since `SSPFDI(store)` in entry `entry`.
  */
-#  define SSPFDO_ID_G(store, entry, id) 
+#  define SSPFDO_ID_G(store, entry, id)
 
-/* 
+/*
  * generate statistics and print them for the first `num_vals` values of store `store`.
  */
-#  define SSPFDP(store, num_vals) 
+#  define SSPFDP(store, num_vals)
 
-/* 
- * generate statistics and print them for the first `num_vals` values of store `store`. 
+/*
+ * generate statistics and print them for the first `num_vals` values of store `store`.
  * Additionally, print the first `num_print` measurements of this store.
  */
 #  define SSPFDPN(store, num_vals, num_print)
 
-/* 
- * generate statistics and print them for the first `num_vals` values of store `store`. 
+/*
+ * generate statistics and print them for the first `num_vals` values of store `store`.
  * Additionally, print the first `num_print` measurements of this store, in a comma-
  * seperated format.
  */
 #  define SSPFDPN_COMMA(store, num_vals, num_print)
 
-/* 
- * prefetch entry `entry` for store `store`, so that the overheads are minimized (only 
- * necessary if the application has accessed a huge amount of data before using `sspfd`. 
+/*
+ * prefetch entry `entry` for store `store`, so that the overheads are minimized (only
+ * necessary if the application has accessed a huge amount of data before using `sspfd`.
  */
-#  define SSPFDPREFTCH(store, entry) 
+#  define SSPFDPREFTCH(store, entry)
 
-/* 
- * generate statistics for the measurements in store `store` for the first `num_ops` values. 
- * Store the results in `statsp` pointer to a `sspfd_stats_t` structure. 
+/*
+ * generate statistics for the measurements in store `store` for the first `num_ops` values.
+ * Store the results in `statsp` pointer to a `sspfd_stats_t` structure.
  */
 #  define SSPFDSTATS(store, num_ops, statsp)
 
-/* 
- * print the statistics in `statsp` pointer to a `sspfd_stats_t` structure.  
+/*
+ * print the statistics in `statsp` pointer to a `sspfd_stats_t` structure.
  */
 #  define SSPFDPRINT(statsp)
 
-/* 
+/*
  * print the first `num_print` measurements from store `store`.
  */
 #  define SSPFDPRINTV(num_store, num_print)
-/* 
+/*
  * print the first `num_print` measurements from store `store`, comma separated.
  */
 #  define SSPFDPRINTV_COMMA(num_store, num_vals, num_print)
 
-#endif 
+#endif
 
 #define SSPFD_PRINT(args...) printf("[%02lu] ", sspfd_get_id()); printf(args); printf("\n"); fflush(stdout)
 
@@ -152,8 +152,8 @@ extern "C" {
 
 #if !defined(_GETTICKS_H_) && !defined(_H_GETTICKS_)
 #  if defined(__i386__)
-static inline ticks 
-getticks(void) 
+static inline ticks
+getticks(void)
 {
   ticks ret;
 
@@ -173,7 +173,7 @@ static inline ticks
 getticks()
 {
   ticks ret;
-  __asm__ __volatile__ ("rd %%tick, %0" : "=r" (ret) : "0" (ret)); 
+  __asm__ __volatile__ ("rd %%tick, %0" : "=r" (ret) : "0" (ret));
   return ret;
 }
 #  elif defined(__tile__)
@@ -261,7 +261,7 @@ extern __thread volatile ticks sspfd_correction;
 #  define SSPFDI_G()				\
   asm volatile("" ::: "memory");		\
   _sspfd_s_global = getticks();			\
-  asm volatile("" ::: "memory");		
+  asm volatile("" ::: "memory");
 
 #  define SSPFDI_ID_G(id)			\
   asm volatile ("");				\
@@ -290,7 +290,7 @@ extern __thread volatile ticks sspfd_correction;
 #  define SSPFDO_G(store, entry)					\
   asm volatile("" ::: "memory");					\
   sspfd_store[store][entry] =  getticks() - _sspfd_s_global - sspfd_correction;	\
-  asm volatile("" ::: "memory");					
+  asm volatile("" ::: "memory");
 
 #  define SSPFDO_ID_G(store, entry, id)					\
   asm volatile("" ::: "memory");					\
@@ -299,7 +299,7 @@ extern __thread volatile ticks sspfd_correction;
       asm volatile("" ::: "memory");					\
       sspfd_store[store][entry] =  getticks() - _sspfd_s_global - sspfd_correction; \
       asm volatile("" ::: "memory");					\
-    }								       
+    }
 
 
 #  define SSPFDP(store, num_vals)		\

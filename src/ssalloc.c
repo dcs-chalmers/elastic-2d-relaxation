@@ -1,7 +1,7 @@
-/*   
+/*
 	*   File: ssalloc.c
 	*   Author: Vasileios Trigonakis <vasileios.trigonakis@epfl.ch>
-	*   Description: 
+	*   Description:
 	*   ssalloc.c is part of ASCYLIB
 	*
 	* Copyright (c) 2014 Vasileios Trigonakis <vasileios.trigonakis@epfl.ch>,
@@ -44,7 +44,7 @@
 	static __thread void* ssalloc_free_list[SSALLOC_NUM_ALLOCATORS][256] = {{0}};
 	static __thread uint8_t ssalloc_free_cur[SSALLOC_NUM_ALLOCATORS] = {0};
 	static __thread uint8_t ssalloc_free_num[SSALLOC_NUM_ALLOCATORS] = {0};
-#endif 
+#endif
 
 void
 ssalloc_set(void* mem)
@@ -78,7 +78,7 @@ ssalloc_offset(size_t size)
 void* ssalloc_alloc(unsigned int allocator, size_t size)
 {
 	void* ret = NULL;
-	
+
 	#if defined(SSALLOC_USE_MALLOC)
 		ret = (void*) malloc(size);
 		#else
@@ -109,7 +109,7 @@ void* ssalloc(size_t size)
 void* ssalloc_aligned_alloc(unsigned int allocator, size_t alignement, size_t size)
 {
 	void* ret = NULL;
-	
+
 	#if defined(SSALLOC_USE_MALLOC)
 		ret = (void*) memalign(alignement, size);
 		#else
@@ -122,9 +122,9 @@ void* ssalloc_aligned_alloc(unsigned int allocator, size_t alignement, size_t si
 			alloc_next[allocator] += offset;
 			ret = (void*) retu;
 		}
-		
+
 		alloc_next[allocator] += size;
-		
+
 		assert((((uintptr_t) ret) & (alignement-1)) == 0);
 		if (alloc_next[allocator] > SSALLOC_SIZE)
 		{

@@ -1,8 +1,8 @@
-/*   
+/*
  *   File: barrier.h
- *   Author: Vasileios Trigonakis <vasileios.trigonakis@epfl.ch>, 
+ *   Author: Vasileios Trigonakis <vasileios.trigonakis@epfl.ch>,
  *  	     Tudor David <tudor.david@epfl.ch>
- *   Description: 
+ *   Description:
  *   barrier.h is part of ASCYLIB
  *
  * Copyright (c) 2014 Vasileios Trigonakis <vasileios.trigonakis@epfl.ch>,
@@ -28,7 +28,7 @@
 	 * BARRIER
 	 * ################################################################### */
 
-	typedef struct barrier 
+	typedef struct barrier
 	{
 		pthread_cond_t complete;
 		pthread_mutex_t mutex;
@@ -36,7 +36,7 @@
 		int crossing;
 	} barrier_t;
 
-	static inline void barrier_init(barrier_t *b, int n) 
+	static inline void barrier_init(barrier_t *b, int n)
 	{
 		pthread_cond_init(&b->complete, NULL);
 		pthread_mutex_init(&b->mutex, NULL);
@@ -44,17 +44,17 @@
 		b->crossing = 0;
 	}
 
-	static inline void barrier_cross(barrier_t *b) 
+	static inline void barrier_cross(barrier_t *b)
 	{
 		pthread_mutex_lock(&b->mutex); //ad thread aquires mutex lock
 		/* One more thread through */
 		b->crossing++;
 		/* If not all here, wait */
-		if (b->crossing < b->count) 
+		if (b->crossing < b->count)
 		{
 			pthread_cond_wait(&b->complete, &b->mutex); //ad release mutex lock and go to sleep
-		} 
-		else 
+		}
+		else
 		{
 			pthread_cond_broadcast(&b->complete); //ad wakeup all sleeping threads that where blocked on condition (&b->complete)
 			/* Reset for next time */

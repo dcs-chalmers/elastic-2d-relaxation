@@ -1,16 +1,16 @@
-/*    
+/*
  * Author: Adones <adones@chalmers.se>
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * Discritors are synchronised globally (global descriptors )before each operatio is curried out
  */
 
 #include "multi-counter_random-relaxed.h"
-	
+
 RETRY_STATS_VARS;
 
 #include "latency.h"
@@ -25,7 +25,7 @@ __thread uint64_t thread_index;
 
 counter_t* create_counter(uint64_t width)
 {
-	counter_t *set;	
+	counter_t *set;
 	if ((set = (counter_t*) ssalloc_aligned(CACHE_LINE_SIZE, sizeof(counter_t))) == NULL)
     {
 		perror("malloc");
@@ -37,7 +37,7 @@ counter_t* create_counter(uint64_t width)
 	for(i=0;i<width;i++)
 	{
 		set->array[i].count=0;
-	}		
+	}
 	return set;
 }
 
@@ -63,7 +63,7 @@ uint64_t increment(counter_t *set)
 				return ((count+1) * set->width);
 			}
 		#endif
-		
+
 		my_put_cas_fail_count+=1;
 	}
 }
@@ -71,9 +71,9 @@ uint64_t decrement(counter_t *set)
 {
 	int64_t s, count;
 	descriptor_t descriptor, new_descriptor;
-	
+
 	while (1)
-    {		
+    {
 		#if defined(NUM_CHOICES)
 			descriptor = get_decrement_index(set);
 			if(descriptor.count == 0)
@@ -96,7 +96,7 @@ uint64_t decrement(counter_t *set)
 			}
 		#else
 			thread_index = random_index(set);
-			count = set->array[thread_index].count;			
+			count = set->array[thread_index].count;
 			if(count != 0)
 			{
 				RETRY:
@@ -116,7 +116,7 @@ uint64_t decrement(counter_t *set)
 				{
 					count = set->array[s].count;
 					if(count != 0)
-					{					
+					{
 						thread_index = s;
 						goto RETRY;
 					}
@@ -124,8 +124,8 @@ uint64_t decrement(counter_t *set)
 				*/
 				my_null_count+=1;
 				return 0;
-			}			
-		#endif		
+			}
+		#endif
 		my_get_cas_fail_count+=1;
     }
 }
@@ -134,7 +134,7 @@ uint64_t decrement(counter_t *set)
 	descriptor_t get_increment_index(counter_t *set)
 	{
 		descriptor_t descriptor, descriptor2;
-		int64_t i, index2;		
+		int64_t i, index2;
 		thread_index = random_index(set);
 		descriptor.version = set->array[thread_index].version;
 		descriptor.count = set->array[thread_index].count;
@@ -144,19 +144,19 @@ uint64_t decrement(counter_t *set)
 			index2 = random_index(set);
 			descriptor2.version = set->array[index2].version;
 			descriptor2.count = set->array[index2].count;
-			if(descriptor2.count < descriptor.count) 
+			if(descriptor2.count < descriptor.count)
 			{
 				thread_index = index2;
 				descriptor = descriptor2;
 			}
-		}	
+		}
 		return descriptor;
-	}	
+	}
 	descriptor_t get_decrement_index(counter_t *set)
 	{
 		descriptor_t descriptor, descriptor2;
-		int64_t i, s, index2;		
-		thread_index = random_index(set);		
+		int64_t i, s, index2;
+		thread_index = random_index(set);
 		RETRY:
 		descriptor.version = set->array[thread_index].version;
 		descriptor.count = set->array[thread_index].count;
@@ -165,7 +165,7 @@ uint64_t decrement(counter_t *set)
 			index2 = random_index(set);
 			descriptor2.version = set->array[index2].version;
 			descriptor2.count = set->array[index2].count;
-			if(descriptor2.count > descriptor.count) 
+			if(descriptor2.count > descriptor.count)
 			{
 				thread_index = index2;
 				descriptor = descriptor2;
@@ -177,12 +177,12 @@ uint64_t decrement(counter_t *set)
 			for(s=0; s < set->width; s++)
 			{
 				if(set->array[s].count != 0)
-				{					
+				{
 					thread_index = s;
 					goto RETRY;
 				}
 			}
-		}	
+		}
 		*/
 		return descriptor;
 	}

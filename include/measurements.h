@@ -39,7 +39,7 @@ extern "C" {
 #  endif
 #endif  /* REF_SPEED_GHZ */
 
-  /* 
+  /*
 #DO_TIMINGS_TICKS
 #DO_TIMINGS_TICKS_SIMPLE
 #DO_TIMINGS_STD
@@ -50,14 +50,14 @@ extern "C" {
 #  undef DO_TIMINGS_TICKS
 #  undef DO_TIMINGS_TICKS_SIMPLE
 #  undef DO_TIMINGS_STD
-#  define PF_MSG(pos, msg)        
-#  define PF_START(pos)           
-#  define PF_STOP(pos)            
-#  define PF_KILL(pos)            
-#  define PF_PRINT_TICKS          
-#  define PF_PRINT                
-#  define PF_EXCLUDE(pos)    
-#  define PF_CORRECTION 
+#  define PF_MSG(pos, msg)
+#  define PF_START(pos)
+#  define PF_STOP(pos)
+#  define PF_KILL(pos)
+#  define PF_PRINT_TICKS
+#  define PF_PRINT
+#  define PF_EXCLUDE(pos)
+#  define PF_CORRECTION
 #else
 #  define PF_MSG(pos, msg)        SET_PROF_MSG_POS(pos, msg)
 #  define PF_START(pos)           ENTRY_TIME_POS(pos)
@@ -132,17 +132,17 @@ extern "C" {
       }}} while(0);
 
 
-  // }}} 
+  // }}}
   // ================================== TICKS ================================== {{{
 #elif defined DO_TIMINGS_TICKS
-  
+
 #  include <stdint.h>
 
 #  define ENTRY_TIMES_SIZE 16
 
   extern void prints_ticks_stats(int start, int end);
 
-  enum timings_bool_t 
+  enum timings_bool_t
     {
       M_FALSE, M_TRUE
     };
@@ -156,7 +156,7 @@ extern "C" {
   extern ticks getticks_correction_calc();
 
 #  define MEASUREREMENT_CORRECTION getticks_correction_calc();
-#  define SET_PROF_MSG(msg) SET_PROF_MSG_POS(0, msg) 
+#  define SET_PROF_MSG(msg) SET_PROF_MSG_POS(0, msg)
 #  define ENTRY_TIME ENTRY_TIME_POS(0)
 #  define EXIT_TIME EXIT_TIME_POS(0)
 #  define KILL_ENTRY_TIME KILL_ENTRY_TIME_POS(0)
@@ -228,17 +228,17 @@ extern "C" {
   prints_ticks_stats(start, end);
 
 
-  // }}} 
+  // }}}
   // ================================== TICKS SIMPLE version ================================== {{{
 #elif defined(DO_TIMINGS_TICKS_SIMPLE)
-  
+
 #  include <stdint.h>
 
 #  define ENTRY_TIMES_SIZE 16
 
   extern void prints_ticks_stats(int start, int end);
 
-  enum timings_bool_t 
+  enum timings_bool_t
     {
       M_FALSE, M_TRUE
     };
@@ -251,7 +251,7 @@ extern "C" {
   extern ticks getticks_correction_calc();
 
 #  define MEASUREREMENT_CORRECTION getticks_correction_calc();
-#  define SET_PROF_MSG(msg) SET_PROF_MSG_POS(0, msg) 
+#  define SET_PROF_MSG(msg) SET_PROF_MSG_POS(0, msg)
 #  define ENTRY_TIME ENTRY_TIME_POS(0)
 #  define EXIT_TIME EXIT_TIME_POS(0)
 #  define KILL_ENTRY_TIME KILL_ENTRY_TIME_POS(0)
@@ -337,7 +337,7 @@ extern "C" {
 #include <assert.h>
 
 
-typedef struct 
+typedef struct
 {
   size_t x;
   double cdf;
@@ -352,7 +352,7 @@ typedef struct
   size_t values[ECDF_BOXPLOT_VALS];
 } ecdf_boxplot_t;
 
-typedef struct 
+typedef struct
 {
   size_t* vals_sorted;
   size_t val_n;
@@ -360,7 +360,7 @@ typedef struct
   ecdf_pair_t* pairs;
 } ecdf_t;
 
-typedef struct 
+typedef struct
 {
   size_t x_min;
   size_t x_max;

@@ -19,7 +19,7 @@ PROF = $(ROOT)/src
 
 .PHONY:	all clean
 
-all:	main 
+all:	main
 
 measurements.o:
 	$(CC) $(CFLAGS) -c -o $(BUILDIR)/measurements.o $(PROF)/measurements.c
@@ -27,13 +27,13 @@ measurements.o:
 ssalloc.o:
 	$(CC) $(CFLAGS) -c -o $(BUILDIR)/ssalloc.o $(PROF)/ssalloc.c
 
-multi-qu_ran.o: 
+multi-qu_ran.o:
 	$(CC) $(CFLAGS) -c -o $(BUILDIR)/multi-qu_ran.o multi-queue_random-relaxed.c
 
 test.o: multi-queue_random-relaxed.h
 	$(CC) $(CFLAGS) -c -o $(BUILDIR)/test.o $(TEST_FILE)
 
-main: measurements.o ssalloc.o  multi-qu_ran.o test.o 
+main: measurements.o ssalloc.o  multi-qu_ran.o test.o
 	$(CC) $(CFLAGS) $(BUILDIR)/measurements.o $(BUILDIR)/ssalloc.o $(BUILDIR)/multi-qu_ran.o  $(BUILDIR)/test.o -o $(BINS) $(LDFLAGS)
 
 clean:

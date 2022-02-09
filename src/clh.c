@@ -5,7 +5,7 @@
  * Author: Tudor David <tudor.david@epfl.ch>,
  *         Vasileios Trigonakis <vasileios.trigonakis@epfl.ch>
  *
- * Description: 
+ * Description:
  *      Clh lock implementation
  *
  * The MIT License (MIT)
@@ -35,8 +35,8 @@
 
 __thread clh_local_params clh_local_p;
 
-clh_qnode* 
-clh_acquire(clh_lock *L, clh_qnode* I) 
+clh_qnode*
+clh_acquire(clh_lock *L, clh_qnode* I)
 {
   I->locked=1;
 #ifndef  __tile__
@@ -50,7 +50,7 @@ clh_acquire(clh_lock *L, clh_qnode* I)
 #if defined(OPTERON_OPTIMIZE)
   PREFETCHW(pred);
 #endif	/* OPTERON_OPTIMIZE */
-  while (pred->locked != 0) 
+  while (pred->locked != 0)
     {
       PAUSE;
 #if defined(OPTERON_OPTIMIZE)
@@ -66,8 +66,8 @@ clh_acquire(clh_lock *L, clh_qnode* I)
   return (clh_qnode*) pred;
 }
 
-clh_qnode* 
-clh_release(clh_qnode *my_qnode, clh_qnode * my_pred) 
+clh_qnode*
+clh_release(clh_qnode *my_qnode, clh_qnode * my_pred)
 {
 #ifdef  __tile__
   MEM_BARRIER;
@@ -76,8 +76,8 @@ clh_release(clh_qnode *my_qnode, clh_qnode * my_pred)
   return my_pred;
 }
 
-clh_global_params* 
-init_clh_locks(uint32_t num_locks) 
+clh_global_params*
+init_clh_locks(uint32_t num_locks)
 {
   clh_global_params* the_params;
   the_params = (clh_global_params*)malloc(num_locks * sizeof(clh_global_params));
@@ -92,7 +92,7 @@ init_clh_locks(uint32_t num_locks)
 }
 
 void
-init_alloc_clh(clh_lock_t* lock) 
+init_alloc_clh(clh_lock_t* lock)
 {
   clh_qnode* a_node = (clh_qnode *) memalign(CACHE_LINE_SIZE, sizeof(clh_qnode));
   a_node->locked=0;
@@ -100,7 +100,7 @@ init_alloc_clh(clh_lock_t* lock)
 }
 
 void
-destroy_free_clh(clh_lock* lock) 
+destroy_free_clh(clh_lock* lock)
 {
 }
 

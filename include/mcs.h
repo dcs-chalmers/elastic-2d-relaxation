@@ -51,7 +51,7 @@ extern "C" {
 #include <assert.h>
 
 #if !defined(__x86_64__)
-#  error This file is designed to work only on x86_64 architectures! 
+#  error This file is designed to work only on x86_64 architectures!
 #endif
 
 #define LOCK_IN_NAME "MCS"
@@ -64,10 +64,10 @@ extern "C" {
 #define REPLACE_MUTEX  1	/* ovewrite the pthread_[mutex|cond] functions */
 #define MCS_MAX_THR    81
 /* ******************************************************************************** */
- 
 
-static inline void* 
-swap_ptr(volatile void* ptr, void *x) 
+
+static inline void*
+swap_ptr(volatile void* ptr, void *x)
 {
   asm volatile("xchgq %0,%1"
 	       :"=r" ((unsigned long long) x)
@@ -85,7 +85,7 @@ swap_ptr(volatile void* ptr, void *x)
   ;
 #endif
 
-typedef struct mcs_lock 
+typedef struct mcs_lock
 {
   volatile uint64_t waiting;
   volatile struct mcs_lock* next;
@@ -110,7 +110,7 @@ mcs_get_local()
 
 
 static inline int
-mcs_lock_trylock(mcs_lock_t* lock) 
+mcs_lock_trylock(mcs_lock_t* lock)
 {
   if (lock->next != NULL)
     {
@@ -123,11 +123,11 @@ mcs_lock_trylock(mcs_lock_t* lock)
 }
 
 static inline int
-mcs_lock_lock(mcs_lock_t* lock) 
+mcs_lock_lock(mcs_lock_t* lock)
 {
   volatile mcs_lock_t* local = mcs_get_local();
   local->next = NULL;
-  
+
   mcs_lock_t* pred = swap_ptr((void*) &lock->next, (void*) local);
 
   if (pred == NULL)  		/* lock was free */
@@ -136,7 +136,7 @@ mcs_lock_lock(mcs_lock_t* lock)
     }
   local->waiting = 1; // word on which to spin
   pred->next = local; // make pred point to me
-  while (local->waiting != 0) 
+  while (local->waiting != 0)
     {
       PAUSE_IN();
     }
@@ -145,31 +145,31 @@ mcs_lock_lock(mcs_lock_t* lock)
 
 
 static inline int
-mcs_lock_unlock(mcs_lock_t* lock) 
+mcs_lock_unlock(mcs_lock_t* lock)
 {
   volatile mcs_lock_t* local = mcs_get_local();
 
   volatile mcs_lock_t* succ;
 
   if (!(succ = local->next)) /* I seem to have no succ. */
-    { 
+    {
       /* try to fix global pointer */
-      if (__sync_val_compare_and_swap(&lock->next, local, NULL) == local) 
+      if (__sync_val_compare_and_swap(&lock->next, local, NULL) == local)
 	{
 	  return 0;
 	}
-      do 
+      do
 	{
 	  succ = local->next;
 	  PAUSE_IN();
-	} 
+	}
       while (!succ); // wait for successor
     }
   succ->waiting = 0;
   return 0;
 }
 
-static inline int 
+static inline int
 mcs_lock_init(mcs_lock_t* lock, pthread_mutexattr_t* a)
 {
   lock->next = NULL;
@@ -177,7 +177,7 @@ mcs_lock_init(mcs_lock_t* lock, pthread_mutexattr_t* a)
   return 0;
 }
 
-static inline int 
+static inline int
 mcs_lock_destroy(mcs_lock_t* the_lock)
 {
   return 0;

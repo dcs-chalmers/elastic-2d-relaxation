@@ -13,7 +13,7 @@
 #include "lock_if.h"
 #include "ssmem.h"
 #include "utils.h"
- 
+
  /* ################################################################### *
 	* Definition of macros: per data structure
 * ################################################################### */
@@ -32,14 +32,14 @@ typedef struct mqueue_node
 	skey_t key;
 	sval_t val;
 	ticks timestamp;
-	struct mqueue_node* next;
+	struct mqueue_node* volatile next;
 	uint8_t padding[CACHE_LINE_SIZE - sizeof(ticks) - sizeof(skey_t) - sizeof(sval_t) - sizeof(struct mqueue_node*)];
 } node_t;
 
 typedef ALIGNED(CACHE_LINE_SIZE) struct array_index
 {
-	node_t* node; 
-	uint8_t padding[CACHE_LINE_SIZE - sizeof(node_t*)]; 
+	node_t* node;
+	uint8_t padding[CACHE_LINE_SIZE - sizeof(node_t*)];
 } index_t;
 
 typedef ALIGNED(CACHE_LINE_SIZE) struct mqueue_file
@@ -61,7 +61,7 @@ typedef struct file_descriptor
 
 /*Thread local variables*/
 extern __thread ssmem_allocator_t* alloc;
-extern __thread int thread_id; 
+extern __thread int thread_id;
 
 extern __thread unsigned long my_put_cas_fail_count;
 extern __thread unsigned long my_get_cas_fail_count;

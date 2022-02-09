@@ -4,7 +4,7 @@
  * File: clh.h
  * Author: Tudor David <tudor.david@epfl.ch>
  *
- * Description: 
+ * Description:
  *      Implementation of a CLH lock
  *
  * The MIT License (MIT)
@@ -47,7 +47,7 @@
 #include "utils.h"
 #include "atomic_ops.h"
 
-typedef struct clh_qnode 
+typedef struct clh_qnode
 {
   volatile uint8_t locked;
 #ifdef ADD_PADDING
@@ -58,14 +58,14 @@ typedef struct clh_qnode
 typedef volatile clh_qnode* clh_qnode_ptr;
 typedef clh_qnode_ptr clh_lock;
 
-typedef struct clh_local_params 
+typedef struct clh_local_params
 {
   clh_qnode* my_qnode;
   clh_qnode* my_pred;
 } clh_local_params;
 
 
-typedef struct clh_global_params 
+typedef struct clh_global_params
 {
   clh_lock* the_lock;
 #ifdef ADD_PADDING
